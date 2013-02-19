@@ -24,9 +24,15 @@ impure function init_mem(mif_file_name : in string) return mem_type14 is
     variable temp_mem : mem_type14;
 begin
     for i in mem_type14'range loop
-        readline(mif_file, mif_line);
-        read(mif_line, temp_bv);
-        temp_mem(i) := to_stdlogicvector(temp_bv);
+        if not endfile(mif_file) then
+            readline(mif_file, mif_line);
+        end if;
+        if not endfile(mif_file) then
+            read(mif_line, temp_bv);
+            temp_mem(i) := to_stdlogicvector(temp_bv);
+        else
+            temp_mem(i) := (others => '0');
+        end if;
     end loop;
     return temp_mem;
 end function;
