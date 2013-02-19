@@ -1,0 +1,13 @@
+PIC16F84 compatible microprocessor.
+
+This project is a microprocessor aiming to be compatible with Microchips 
+pic16f84 microprocessor.
+
+Things that work:
+- Most of the instructions (all arithmetic, bit set/clear, branches, call and returns work)
+- Writing to general purpose RAM
+
+What doesn't
+- Some of the special purpose registers (PCL and STATUS work)
+- Programming (Run time low voltage programming)
+- Sleep, watchdog, interrupts, timer
