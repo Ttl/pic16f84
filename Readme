@@ -4,10 +4,13 @@ This project is a microprocessor aiming to be compatible with Microchips
 pic16f84 microprocessor.
 
 Things that work:
-- Most of the instructions (all arithmetic, bit set/clear, branches, call and returns work)
-- Writing to general purpose RAM
+- All of the instruction except for:
+  clrwdt (clear watchdog timer)
+  retfie (return from interrupt)
+  sleep (disable oscillator, go into sleep state)
+- Inputs and outputs. Configuring, reading and writing.
 
 What doesn't
-- Some of the special purpose registers (PCL and STATUS work)
+- Some of the special purpose registers (peripheral related register)
 - Programming (Run time low voltage programming)
 - Sleep, watchdog, interrupts, timer
