@@ -60,8 +60,15 @@ pc_mem_out <= pclath(4 downto 0)&pcl;
 
 -- Memory
 process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank)
+variable addr : std_logic_vector(6 downto 0);
 begin
 
+-- Indirect addressing
+if a1 = "0000000" then
+    addr := fsr(6 downto 0);
+else
+    addr := a1;
+end if;
 
 
 if rising_edge(clk) then
@@ -70,13 +77,14 @@ if rising_edge(clk) then
             status(I) <= status_flags(I);
         end if;
     end loop;
+    
     pc_update <= '0';
     if we = '1' then
         --Write
-        case to_integer(unsigned(a1)) is
+        case to_integer(unsigned(addr)) is
             -- Indirect addressing
             when 0 =>
-                -- TODO
+                -- Pointer pointing to itself ?
             
             -- TMR0/OPTION_REG
             when 1 =>
@@ -158,11 +166,11 @@ if rising_edge(clk) then
                 intcon <= wd;
                 
             when others =>
-                if to_integer(unsigned(a1)) > 11 then
+                if to_integer(unsigned(addr)) > 11 then
                     if bank = '0' then
-                        mem_b0(to_integer(unsigned(a1))) <= wd;
+                        mem_b0(to_integer(unsigned(addr))) <= wd;
                     else
-                        mem_b1(to_integer(unsigned(a1))) <= wd;
+                        mem_b1(to_integer(unsigned(addr))) <= wd;
                     end if;
                 end if;
         end case;
@@ -170,8 +178,12 @@ if rising_edge(clk) then
 end if;
 
 -- Set output
-case to_integer(unsigned(a1)) is
+case to_integer(unsigned(addr)) is
     
+    -- Read from pointer that points to itself
+    when 0 =>
+        d1 <= "XXXXXXXX";
+        
     -- PCL
     when 2 =>
         -- Read low bits of PC
@@ -210,13 +222,15 @@ case to_integer(unsigned(a1)) is
         
     when others =>
         if bank = '0' then
-            d1 <= mem_b0(to_integer(unsigned(a1)));
+            d1 <= mem_b0(to_integer(unsigned(addr)));
         else
-            d1 <= mem_b1(to_integer(unsigned(a1)));
+            d1 <= mem_b1(to_integer(unsigned(addr)));
         end if;
 end case;
 
 if reset = '1' then
+    option_reg <= "11111111";
+    intcon <= "0000000X";
     pclath <= "00000000";
     porta <= "XXXZZZZZ";
     portb <= "ZZZZZZZZ";
