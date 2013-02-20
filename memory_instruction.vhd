@@ -26,9 +26,9 @@ begin
     for i in mem_type14'range loop
         if not endfile(mif_file) then
             readline(mif_file, mif_line);
-            if not endfile(mif_file) then    
-                read(mif_line, temp_bv);
-            end if;
+        end if;
+        if not endfile(mif_file) then   
+            read(mif_line, temp_bv);
             temp_mem(i) := to_stdlogicvector(temp_bv);
         else
             temp_mem(i) := (others => '0');
