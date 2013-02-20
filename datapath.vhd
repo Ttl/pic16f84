@@ -56,8 +56,8 @@ writedata <= alu_result;
 -- Status flags from ALU to IO
 status_flags <= "00"&alu_z&alu_dc&alu_c;
 
--- Skip instruction on taken conditional branch or return
-skip <= skip_tmp or retrn_delayed;
+-- Skip instruction on taken conditional branch, return or write to PCL
+skip <= skip_tmp or retrn_delayed or pcl_update;
 
 skip_delay : process(clk)
 begin

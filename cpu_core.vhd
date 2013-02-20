@@ -98,6 +98,7 @@ io : entity work.memory
            status_write => status_write,
            status_c => status_c,
            pc_mem_out => pc_mem,
+           pc_in => pc,
            porta_inout => porta,
            portb_inout => portb,
            pc_update => pc_update);

@@ -15,6 +15,7 @@ entity memory is
            status_write : in std_logic_vector(4 downto 0);
            status_c : out std_logic;
            pc_mem_out : out std_logic_vector(12 downto 0);
+           pc_in : in std_logic_vector(12 downto 0);
            porta_inout : inout std_logic_vector(4 downto 0);
            portb_inout : inout std_logic_vector(7 downto 0);
            pc_update : out std_logic);
@@ -55,7 +56,7 @@ begin
 -- Output C flag to ALU for RLF/RRF instructions
 status_c <= status(0);
 -- PCL is written to when updated
-pc_mem_out <= pclath(4 downto 0)&wd;
+pc_mem_out <= pclath(4 downto 0)&pcl;
 
 -- Memory
 process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank)
@@ -83,7 +84,8 @@ if rising_edge(clk) then
                 
             -- PCL
             when 2 =>
-                 pc_update <= '1';
+                pcl <= wd;
+                pc_update <= '1';
                  
             -- STATUS
             when 3 => 
@@ -91,7 +93,8 @@ if rising_edge(clk) then
             
             -- FSR
             when 4 =>
-            
+                fsr <= wd;
+                
             -- PORTA/TRISA
             when 5 =>
                 if bank = '0' then
@@ -169,9 +172,19 @@ end if;
 -- Set output
 case to_integer(unsigned(a1)) is
     
+    -- PCL
+    when 2 =>
+        -- Read low bits of PC
+        d1 <= pc_in(7 downto 0);
+    
+    -- STATUS
     when 3 =>
         d1 <= "00"&status(5 downto 0);
     
+    -- FSR
+    when 4 =>
+        d1 <= fsr;
+        
     when 5 =>
         if bank = '0' then
             d1 <= "000"&porta(4 downto 0);
@@ -186,11 +199,14 @@ case to_integer(unsigned(a1)) is
             d1 <= trisb;
         end if;
     
+    -- PCLATH
     when 10 =>
+        -- Not updated automatically from PC
         d1 <= pclath;
         
-    when 1|2|4|7|8|9|11 =>
-        -- Not implemented
+    when 1|7|8|9|11 =>
+        d1 <= (others => 'X');
+        -- Not implemented yet
         
     when others =>
         if bank = '0' then
