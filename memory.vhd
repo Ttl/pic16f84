@@ -88,7 +88,11 @@ if rising_edge(clk) then
             
             -- TMR0/OPTION_REG
             when 1 =>
-                -- TODO
+                if bank = '0' then
+                    tmr0 <= wd;
+                else
+                    option_reg <= wd;
+                end if;
                 
             -- PCL
             when 2 =>
@@ -183,6 +187,14 @@ case to_integer(unsigned(addr)) is
     -- Read from pointer that points to itself
     when 0 =>
         d1 <= "XXXXXXXX";
+    
+    -- TMR0/OPTION_REG
+    when 1 =>
+        if bank = '0' then
+            d1 <= tmr0;
+        else
+            d1 <= option_reg;
+        end if;
         
     -- PCL
     when 2 =>
@@ -197,6 +209,7 @@ case to_integer(unsigned(addr)) is
     when 4 =>
         d1 <= fsr;
         
+    -- PORTA/TRISA    
     when 5 =>
         if bank = '0' then
             d1 <= "000"&porta(4 downto 0);
@@ -204,6 +217,7 @@ case to_integer(unsigned(addr)) is
             d1 <= "000"&trisa(4 downto 0);
         end if;
 
+    -- PORTB/TRISB  
     when 6 =>
         if bank = '0' then
             d1 <= portb;
@@ -211,14 +225,34 @@ case to_integer(unsigned(addr)) is
             d1 <= trisb;
         end if;
     
+    -- Not implemented, read as 0
+    when 7 =>
+        d1 <= "00000000";
+    
+    -- EEDATA/EECON1
+    when 8 =>
+        if bank = '0' then
+            d1 <= eedata;
+        else
+            d1 <= eecon1;
+        end if;
+    
+    -- EEADR/EECON2
+    when 9 =>
+        if bank = '0' then
+            d1 <= eeadr;
+        else
+            d1 <= eecon2;
+        end if;
+       
     -- PCLATH
     when 10 =>
         -- Not updated automatically from PC
         d1 <= pclath;
-        
-    when 1|7|8|9|11 =>
-        d1 <= (others => 'X');
-        -- Not implemented yet
+   
+   -- INTCON
+    when 11 =>
+        d1 <= intcon;
         
     when others =>
         if bank = '0' then
