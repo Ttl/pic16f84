@@ -41,11 +41,11 @@ porta4_rising <= not porta4_delayed and porta4;
 porta4_falling <= porta4_delayed and not porta4;
 
 prescaler:process(clk, reset, prescale, clk_source, porta4, porta4_delayed)
-variable count : unsigned(8 downto 0);
+variable count : unsigned(7 downto 0);
 begin
 if reset = '1' then
     prescaler_out <= '0';
-    count := to_unsigned(0,9);
+    count := to_unsigned(0,8);
 elsif rising_edge(clk) then
     prescaler_out <= '0';
     -- Rising falling edge and transition source logic
@@ -55,7 +55,7 @@ elsif rising_edge(clk) then
         count := count + 1;
         if count(to_integer(unsigned(prescale))) = '1' then
             -- Overflow
-            count := to_unsigned(0,9);
+            count := to_unsigned(0,8);
             prescaler_out <= '1';
         end if;
     end if;

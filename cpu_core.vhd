@@ -22,7 +22,6 @@ signal ram_write_en : std_logic;
 signal instr : std_logic_vector(13 downto 0);
 signal pc : std_logic_vector(12 downto 0);
 signal writedata, readdata : std_logic_vector(7 downto 0);
-signal ram_address : std_logic_vector(6 downto 0);
 
 signal status_c : std_logic;
 signal status_write, status_flags : std_logic_vector(4 downto 0);
@@ -110,7 +109,7 @@ io : entity work.memory
            status_write => status_write,
            status_c => status_c,
            pc_mem_out => pc_mem,
-           pc_in => pc,
+           pcl_in => pc(7 downto 0),
            porta_inout => porta,
            portb_inout => portb,
            pc_update => pc_update,
@@ -128,8 +127,7 @@ stack : entity work.stack
               push => stack_push,
               pop => retrn,
               pcin => stack_in,
-              pcout => stack_out,
-              full => open);
+              pcout => stack_out);
 
 tmr0 : entity work.timer
     port map( clk => clk,

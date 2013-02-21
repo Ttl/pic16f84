@@ -15,7 +15,7 @@ entity memory is
            status_write : in std_logic_vector(4 downto 0);
            status_c : out std_logic;
            pc_mem_out : out std_logic_vector(12 downto 0);
-           pc_in : in std_logic_vector(12 downto 0);
+           pcl_in : in std_logic_vector(7 downto 0);
            porta_inout : inout std_logic_vector(4 downto 0);
            portb_inout : inout std_logic_vector(7 downto 0);
            pc_update : out std_logic;
@@ -60,7 +60,7 @@ begin
 
 
 -- Memory
-process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank)
+process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in)
 variable addr : std_logic_vector(6 downto 0);
 begin
 
@@ -211,7 +211,7 @@ case to_integer(unsigned(addr)) is
     -- PCL
     when 2 =>
         -- Read low bits of PC
-        d1 <= pc_in(7 downto 0);
+        d1 <= pcl_in;
     
     -- STATUS
     when 3 =>

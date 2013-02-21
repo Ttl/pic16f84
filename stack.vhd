@@ -7,8 +7,7 @@ entity stack is
     Port ( clk, reset : in  STD_LOGIC;
            push, pop : in  STD_LOGIC;
            pcin : in  STD_LOGIC_VECTOR (12 downto 0);
-           pcout : out  STD_LOGIC_VECTOR (12 downto 0);
-           full : out  STD_LOGIC);
+           pcout : out  STD_LOGIC_VECTOR (12 downto 0));
 end stack;
 
 architecture Behavioral of stack is
@@ -32,11 +31,6 @@ if rising_edge(clk) then
 end if;
     -- Set output, only readable after pop
     pcout <= mem(to_integer(pointer));
-    if pointer = 7 then
-        full <= '1';
-    else
-        full <= '0';
-    end if;
 
 if reset = '1' then
     pointer := to_unsigned(0,3);
