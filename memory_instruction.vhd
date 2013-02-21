@@ -22,18 +22,17 @@ impure function init_mem(mif_file_name : in string) return mem_type14 is
     variable mif_line : line;
     variable temp_bv : bit_vector(13 downto 0);
     variable temp_mem : mem_type14;
+    variable i : integer := 0;
 begin
-    for i in mem_type14'range loop
-        if not endfile(mif_file) then
+        while not endfile(mif_file) loop
             readline(mif_file, mif_line);
-        end if;
-        if not endfile(mif_file) then   
             read(mif_line, temp_bv);
             temp_mem(i) := to_stdlogicvector(temp_bv);
-        else
-            temp_mem(i) := (others => '0');
-        end if;
-    end loop;
+            i := i + 1;
+        end loop;
+        for j in i to mem_type14'length-1 loop
+            temp_mem(j) := (others => '0');
+        end loop;
     return temp_mem;
 end function;
 
