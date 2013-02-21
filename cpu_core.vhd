@@ -33,6 +33,15 @@ signal stack_in, stack_out : std_logic_vector(12 downto 0);
 
 signal pc_mem : std_logic_vector(12 downto 0);
 signal pc_update : std_logic;
+
+-- Signal for pushing PC to stack from decoder
+signal call : std_logic;
+-- Signal from TMR0 for pushing the PC to stack
+signal tmr0_interrupt : std_logic;
+
+signal interrupt, retfie : std_logic;
+
+signal intcon, option_reg : std_logic_vector(7 downto 0);
 begin
 
 pc_out <= pc;
@@ -59,7 +68,9 @@ datapath : entity work.datapath
     status_flags => status_flags,
     status_c_in => status_c,
     pc_mem => pc_mem,
-    pcl_update => pc_update
+    pcl_update => pc_update,
+    gie => intcon(7),
+    tmr0_interrupt => tmr0_interrupt
     );
 
 decoder : entity work.decoder
@@ -71,10 +82,11 @@ decoder : entity work.decoder
     branch => branch,
     writew => writew,
     retrn => retrn,
-    pc_push => stack_push,
+    pc_push => call,
     skip => skip,
     aluop => alu_op,
-    status_write => status_write
+    status_write => status_write,
+    retfie => retfie
     );
 
 instr_memory : entity work.memory_instruction
@@ -101,7 +113,14 @@ io : entity work.memory
            pc_in => pc,
            porta_inout => porta,
            portb_inout => portb,
-           pc_update => pc_update);
+           pc_update => pc_update,
+           intcon_out => intcon,
+           option_reg_out => option_reg,
+           interrupt => interrupt,
+           retfie => retfie);
+
+interrupt <= tmr0_interrupt; -- Add missing interrupts
+stack_push <= tmr0_interrupt or call;
 
 stack : entity work.stack
     port map( clk => clk,
@@ -111,6 +130,14 @@ stack : entity work.stack
               pcin => stack_in,
               pcout => stack_out,
               full => open);
+
+tmr0 : entity work.timer
+    port map( clk => clk,
+              reset => reset,
+              t0ie => intcon(5),
+              option => option_reg,
+              porta4 => porta(4),
+              tmr0_interrupt => tmr0_interrupt);
               
 end Behavioral;
 

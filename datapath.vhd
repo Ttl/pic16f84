@@ -19,7 +19,9 @@ entity datapath is
            status_flags : out std_logic_Vector(4 downto 0);
            status_c_in : std_logic;
            pc_mem : in std_logic_vector(12 downto 0);
-           pcl_update : in std_logic);
+           pcl_update : in std_logic;
+           gie : in std_logic;
+           tmr0_interrupt : in std_logic);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -37,9 +39,14 @@ begin
 
 -- Next address if no branch or untaken conditional branch (skip)
 -- Taken conditional otherwise
-pcnext <= pc_ret when retrn_delayed = '1' else
+pcnext <= std_logic_vector(to_unsigned(4,13)) when (gie and tmr0_interrupt) = '1' else
+          pc_ret when retrn_delayed = '1' else
           pc_plus1_int when branch = '0' or skip = '1'
           else pc_tmp(12 downto 11)&instr(10 downto 0);
+
+--pcnext <= pc_tmp(12 downto 11)&instr(10 downto 0) when (branch and not skip) = '1' else
+--         pc_ret when retrn_delayed = '1' else
+--          pc_plus1_int;
 
 pc_plus1_int2 <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
 pc_plus1_int <= pc_plus1_int2 when pcl_update = '0' else pc_mem;

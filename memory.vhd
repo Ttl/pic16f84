@@ -18,7 +18,11 @@ entity memory is
            pc_in : in std_logic_vector(12 downto 0);
            porta_inout : inout std_logic_vector(4 downto 0);
            portb_inout : inout std_logic_vector(7 downto 0);
-           pc_update : out std_logic);
+           pc_update : out std_logic;
+           intcon_out : out std_logic_vector(7 downto 0);
+           option_reg_out : out std_logic_vector(7 downto 0);
+           interrupt : in STD_LOGIC;
+           retfie : in STD_LOGIC);
 end memory;
 
 architecture Behavioral of memory is
@@ -53,10 +57,7 @@ alias bank is sfr(3)(5);
 
 begin
 
--- Output C flag to ALU for RLF/RRF instructions
-status_c <= status(0);
--- PCL is written to when updated
-pc_mem_out <= pclath(4 downto 0)&pcl;
+
 
 -- Memory
 process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank)
@@ -71,12 +72,23 @@ else
 end if;
 
 
+    
 if rising_edge(clk) then
     for I in 0 to 4 loop
         if status_write(I) = '1' then
             status(I) <= status_flags(I);
         end if;
     end loop;
+    
+    -- On interrupt INTCON(7) GIE is cleared
+    if interrupt = '1' then
+        intcon(7) <= '0';
+    end if;
+
+    -- On return from interrupt (retfie) GIE is set
+    if retfie = '1' then
+        intcon(7) <= '1';
+    end if;
     
     pc_update <= '0';
     if we = '1' then
@@ -264,9 +276,9 @@ end case;
 
 if reset = '1' then
     option_reg <= "11111111";
-    intcon <= "0000000X";
+    intcon <= "0000000-";
     pclath <= "00000000";
-    porta <= "XXXZZZZZ";
+    porta <= "---ZZZZZ";
     portb <= "ZZZZZZZZ";
     trisa <= "XXX11111";
     trisb <= "11111111";
@@ -276,5 +288,11 @@ end process;
 
 porta_inout <= porta(4 downto 0);
 portb_inout <= portb;
+-- Output C flag to ALU for RLF/RRF instructions
+status_c <= status(0);
+-- PCL is written to when updated
+pc_mem_out <= pclath(4 downto 0)&pcl;
+intcon_out <= intcon;
+option_reg_out <= option_reg;
 end Behavioral;
 

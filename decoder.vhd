@@ -12,7 +12,8 @@ entity decoder is
            pc_push : out STD_LOGIC;
            amux : out std_logic_vector(1 downto 0);
            aluop : out  alu_ctrl;
-           status_write : out std_logic_vector(4 downto 0));
+           status_write : out std_logic_vector(4 downto 0);
+           retfie : out std_logic);
 end decoder;
 
 architecture Behavioral of decoder is
@@ -37,6 +38,7 @@ wf_bit := instr(7); --0 = W, 1 = f
 file_reg := instr(6 downto 0);
 imm := instr(7 downto 0);
 
+retfie <= '0';
 alu_mux := "00";
 alub_mux := '0';
 ram_write := '0';
@@ -243,12 +245,11 @@ case opcode is
             -- Nothing
         end if;
         
-        -- bcf f,d / bsf f,d
+        -- bcf f,b / bsf f,b
         if instr(13 downto 11) = "010" then
             alu_op := A_BITSET;
             alu_mux := "01"; --ram
-            writew_en := not wf_bit;
-            ram_write := wf_bit;
+            ram_write := '1';
         end if;
         
         -- bcfsc f,d / bsfss f,d
@@ -277,6 +278,12 @@ case opcode is
             skip_next := '1';
         end if;
         
+        -- retfie
+        if instr = "00000000001001" then
+            pc_return := '1';
+            skip_next := '1';
+            retfie <= '1';
+        end if;
 end case;
 
 amux <= alu_mux;
