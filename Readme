@@ -6,11 +6,10 @@ pic16f84 microprocessor.
 Things that work:
 - All of the instruction except for:
   clrwdt (clear watchdog timer)
-  retfie (return from interrupt)
   sleep (disable oscillator, go into sleep state)
 - Inputs and outputs. Configuring, reading and writing.
 
 What doesn't
 - Some of the special purpose registers (peripheral related register)
 - Programming (Run time low voltage programming)
-- Sleep, watchdog, interrupts, timer
+- Sleep, watchdog, interrupts
