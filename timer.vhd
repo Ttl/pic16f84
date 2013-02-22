@@ -5,10 +5,9 @@ use work.picpkg.all;
 
 entity timer is
     Port ( clk, reset : in  STD_LOGIC;
-           t0ie : in  STD_LOGIC;
            option : in STD_LOGIC_VECTOR(7 downto 0);
            porta4 : in  STD_LOGIC;
-           tmr0_interrupt : out  STD_LOGIC);
+           tmr0_overflow : out  STD_LOGIC);
 end timer;
 
 architecture Behavioral of timer is
@@ -24,7 +23,6 @@ alias psa is option(3);
 signal prescaler_out : std_logic;
 -- Input signal to TMR0
 signal tmr_clk : std_logic;
-signal tmr0_overflow : std_logic;
 signal porta4_delayed : std_logic;
 
 signal porta4_rising, porta4_falling : std_logic;
@@ -85,6 +83,5 @@ elsif rising_edge(clk) then
 end if;
 end process;
 
-tmr0_interrupt <= t0ie and tmr0_overflow;
 end Behavioral;
 

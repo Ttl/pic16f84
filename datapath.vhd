@@ -5,88 +5,35 @@ use work.picpkg.all;
 
 entity datapath is
     Port ( clk,reset : in  STD_LOGIC;
-           pc : out  STD_LOGIC_VECTOR(12 downto 0);
-           pc_plus1 : out STD_LOGIC_VECTOR(12 downto 0);
-           pc_ret : in  STD_LOGIC_VECTOR(12 downto 0);
            instr : in  STD_LOGIC_VECTOR(13 downto 0);
            writedata : out std_logic_vector(7 downto 0);
            readdata : in std_logic_vector(7 downto 0);
            alu_op : in alu_ctrl;
            write_en : out std_logic;
-           bmux,rwmux,branch,writew,retrn : in std_logic;
+           bmux,rwmux,writew : in std_logic;
            amux : in std_logic_vector(1 downto 0);
-           skip_next : in std_logic;
+           skip_instr : in std_logic;
            status_flags : out std_logic_Vector(4 downto 0);
-           status_c_in : std_logic;
-           pc_mem : in std_logic_vector(12 downto 0);
-           pcl_update : in std_logic;
-           gie : in std_logic;
-           tmr0_interrupt : in std_logic);
+           status_c_in : in std_logic);
 end datapath;
 
 architecture Behavioral of datapath is
 
-signal pcnext : std_logic_vector(12 downto 0);
 signal wnext, w : std_logic_vector(7 downto 0);
 signal alu_z, alu_c, alu_dc : std_logic;
 signal amux_out, bmux_out : std_logic_vector(7 downto 0);
-signal pc_tmp, pc_plus1_int2, pc_plus1_int : std_logic_vector(12 downto 0);
 signal alu_result : std_logic_vector(7 downto 0);
 
-signal skip, skip_tmp : std_logic;
-signal retrn_delayed : std_logic;
 begin
 
--- Next address if no branch or untaken conditional branch (skip)
--- Taken conditional otherwise
-pcnext <= std_logic_vector(to_unsigned(4,13)) when (gie and tmr0_interrupt) = '1' else
-          pc_ret when retrn_delayed = '1' else
-          pc_plus1_int when branch = '0' or skip = '1'
-          else pc_tmp(12 downto 11)&instr(10 downto 0);
-
---pcnext <= pc_tmp(12 downto 11)&instr(10 downto 0) when (branch and not skip) = '1' else
---         pc_ret when retrn_delayed = '1' else
---          pc_plus1_int;
-
-pc_plus1_int2 <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
-pc_plus1_int <= pc_plus1_int2 when pcl_update = '0' else pc_mem;
-pc_plus1 <= pc_plus1_int;
-
 -- Don't write to RAM on skipped instruction       
-write_en <= rwmux when skip = '0' else '0';
--- pc_tmp is internal pc for reading, pc is output signal
-pc <= pc_tmp;
+write_en <= rwmux when skip_instr = '0' else '0';
 -- Don't write W when skipping an instruction
-wnext <= alu_result when writew = '1' and skip = '0' else w;
+wnext <= alu_result when writew = '1' and skip_instr = '0' else w;
 -- RAM data in, address comes from instr(6 downto 0)
 writedata <= alu_result;
 -- Status flags from ALU to IO
 status_flags <= "00"&alu_z&alu_dc&alu_c;
-
--- Skip instruction on taken conditional branch, return or write to PCL
-skip <= skip_tmp or retrn_delayed or pcl_update;
-
-skip_delay : process(clk)
-begin
-if rising_edge(clk) then
-    skip_tmp <= skip_next and alu_z;
-end if;
-end process;
-
-retrn_delay : process(clk)
-begin
-if rising_edge(clk) then
-    retrn_delayed <= retrn;
-end if;
-end process;
-
-pc_reg : entity work.flopr
-    generic map( WIDTH => 13)
-    port map(clk => clk,
-             reset => reset,
-             d => pcnext,
-             q => pc_tmp
-             );
              
 w_reg : entity work.flopr
     generic map( WIDTH => 8)

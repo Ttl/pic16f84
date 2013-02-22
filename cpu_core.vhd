@@ -36,106 +36,126 @@ signal pc_update : std_logic;
 -- Signal for pushing PC to stack from decoder
 signal call : std_logic;
 -- Signal from TMR0 for pushing the PC to stack
-signal tmr0_interrupt : std_logic;
+signal tmr0_overflow : std_logic;
 
 signal interrupt, retfie : std_logic;
 
 signal intcon, option_reg : std_logic_vector(7 downto 0);
+
+signal skip_instr : std_logic;
 begin
 
 pc_out <= pc;
 
 datapath : entity work.datapath
     port map(
-    clk => clk,
-    reset => reset,
-    pc => pc,
-    pc_plus1 => stack_in,
-    pc_ret => stack_out,
-    instr => instr,
-    writedata => writedata,
-    readdata => readdata,
-    alu_op => alu_op,
-    write_en => ram_write_en,
-    amux => amux,
-    bmux => bmux,
-    rwmux => rwmux,
-    branch => branch,
-    writew => writew,
-    retrn => retrn,
-    skip_next => skip,
-    status_flags => status_flags,
-    status_c_in => status_c,
-    pc_mem => pc_mem,
-    pcl_update => pc_update,
-    gie => intcon(7),
-    tmr0_interrupt => tmr0_interrupt
+        clk => clk,
+        reset => reset,
+        instr => instr,
+        writedata => writedata,
+        readdata => readdata,
+        alu_op => alu_op,
+        write_en => ram_write_en,
+        amux => amux,
+        bmux => bmux,
+        rwmux => rwmux,
+        writew => writew,
+        skip_instr => skip_instr,
+        status_flags => status_flags,
+        status_c_in => status_c
     );
+
+pc_ctrl : entity work.pc_control
+    port map( 
+        clk => clk,
+        reset => reset,
+        instr => instr,
+        pc => pc,
+        pc_ret => stack_out,
+        pc_mem => pc_mem,
+        intcon => intcon,
+        branch => branch,
+        skip_next => skip,
+        pcl_update => pc_update,
+        retrn => retrn,
+        alu_z => status_flags(2),
+        tmr0_overflow => tmr0_overflow,
+        pc_plus1 => stack_in,
+        skip_instr => skip_instr,
+        interrupt => interrupt
+    );
+
 
 decoder : entity work.decoder
     port map(
-    instr => instr,
-    amux => amux,
-    bmux => bmux,
-    rwmux => rwmux,
-    branch => branch,
-    writew => writew,
-    retrn => retrn,
-    pc_push => call,
-    skip => skip,
-    aluop => alu_op,
-    status_write => status_write,
-    retfie => retfie
+        instr => instr,
+        amux => amux,
+        bmux => bmux,
+        rwmux => rwmux,
+        branch => branch,
+        writew => writew,
+        retrn => retrn,
+        pc_push => call,
+        skip => skip,
+        aluop => alu_op,
+        status_write => status_write,
+        retfie => retfie
     );
 
 instr_memory : entity work.memory_instruction
     generic map(
            CONTENTS => "scripts/instructions.mif"
-                )
-    port map( clk => clk,
-           a1 => pc,
-           d1 => instr,
-           wd => (others => '0'),
-           we => '0');
+    )
+    port map( 
+        clk => clk,
+        a1 => pc,
+        d1 => instr,
+        wd => (others => '0'),
+        we => '0'
+    );
 
 io : entity work.memory
-    port map( clk => clk,
-              reset => reset,
-           a1 => instr(6 downto 0),
-           d1 => readdata,
-           wd => writedata,
-           we => ram_write_en,
-           status_flags => status_flags,
-           status_write => status_write,
-           status_c => status_c,
-           pc_mem_out => pc_mem,
-           pcl_in => pc(7 downto 0),
-           porta_inout => porta,
-           portb_inout => portb,
-           pc_update => pc_update,
-           intcon_out => intcon,
-           option_reg_out => option_reg,
-           interrupt => interrupt,
-           retfie => retfie);
+    port map( 
+        clk => clk,
+        reset => reset,
+        a1 => instr(6 downto 0),
+        d1 => readdata,
+        wd => writedata,
+        we => ram_write_en,
+        status_flags => status_flags,
+        status_write => status_write,
+        status_c => status_c,
+        pc_mem_out => pc_mem,
+        pcl_in => pc(7 downto 0),
+        porta_inout => porta,
+        portb_inout => portb,
+        pc_update => pc_update,
+        intcon_out => intcon,
+        option_reg_out => option_reg,
+        interrupt => interrupt,
+        retfie => retfie
+    );
 
-interrupt <= tmr0_interrupt; -- Add missing interrupts
-stack_push <= tmr0_interrupt or call;
+stack_push <= interrupt or call;
 
 stack : entity work.stack
-    port map( clk => clk,
-              reset => reset,
-              push => stack_push,
-              pop => retrn,
-              pcin => stack_in,
-              pcout => stack_out);
+    port map( 
+        clk => clk,
+        reset => reset,
+        push => stack_push,
+        pop => retrn,
+        pcin => stack_in,
+        pcout => stack_out
+    );
 
 tmr0 : entity work.timer
-    port map( clk => clk,
-              reset => reset,
-              t0ie => intcon(5),
-              option => option_reg,
-              porta4 => porta(4),
-              tmr0_interrupt => tmr0_interrupt);
+    port map( 
+        clk => clk,
+        reset => reset,
+        option => option_reg,
+        porta4 => porta(4),
+        tmr0_overflow => tmr0_overflow
+    );
               
 end Behavioral;
 

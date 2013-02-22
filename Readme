@@ -13,3 +13,6 @@ What doesn't
 - Some of the special purpose registers (peripheral related register)
 - Programming (Run time low voltage programming)
 - Sleep, watchdog, interrupts
+
+Bugs:
+- Call, return, goto take 1 clock cycle instead of 2

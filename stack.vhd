@@ -23,8 +23,8 @@ begin
 if rising_edge(clk) then
     if push = '1' then
         --Write
-        mem(to_integer(pointer)) <= pcin;
         pointer := pointer + 1;
+        mem(to_integer(pointer)) <= pcin;
     elsif pop = '1' then
         pointer := pointer - 1;
     end if;
