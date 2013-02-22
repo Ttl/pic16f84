@@ -218,7 +218,6 @@ case instr(13 downto 8) is
     -- retlw
     when "110100"|"110101"|"110110"|"110111" =>
         retrn <= '1';
-        skip <= '1';
         writew <= '1';
 
 -- Misc operations
@@ -264,13 +263,11 @@ case instr(13 downto 8) is
         -- return 
         if instr = "00000000001000" then
             retrn <= '1';
-            skip <= '1';
         end if;
         
         -- retfie
         if instr = "00000000001001" then
             retrn <= '1';
-            skip <= '1';
             retfie <= '1';
         end if;
 end case;
