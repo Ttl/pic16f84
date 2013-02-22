@@ -43,6 +43,12 @@ signal interrupt, retfie : std_logic;
 signal intcon, option_reg : std_logic_vector(7 downto 0);
 
 signal skip_instr : std_logic;
+
+-- Execute state signals
+signal amux_ex : std_logic_vector(1 downto 0);
+signal bmux_ex, rwmux_ex, writew_ex, skip_ex : std_logic;
+signal alu_op_ex : alu_ctrl;
+signal instr10_ex : std_logic_vector(10 downto 0);
 begin
 
 pc_out <= pc;
@@ -51,18 +57,35 @@ datapath : entity work.datapath
     port map(
         clk => clk,
         reset => reset,
-        instr => instr,
+        instr10 => instr10_ex,
         writedata => writedata,
         readdata => readdata,
-        alu_op => alu_op,
+        alu_op => alu_op_ex,
         write_en => ram_write_en,
-        amux => amux,
-        bmux => bmux,
-        rwmux => rwmux,
-        writew => writew,
+        amux => amux_ex,
+        bmux => bmux_ex,
+        rwmux => rwmux_ex,
+        writew => writew_ex,
         skip_instr => skip_instr,
         status_flags => status_flags,
         status_c_in => status_c
+    );
+
+ctrkl_flop : entity work.ctrl_buf 
+    port map(
+        clk => clk,
+        amux => amux,
+        bmux => bmux,
+        writew => writew,
+        rwmux => rwmux,
+        alu_op => alu_op,
+        instr10 => instr(10 downto 0),
+        amux_ex => amux_ex,
+        bmux_ex => bmux_ex,
+        writew_ex => writew_ex,
+        rwmux_ex => rwmux_ex,
+        alu_op_ex => alu_op_ex,
+        instr10_ex => instr10_ex
     );
 
 pc_ctrl : entity work.pc_control
@@ -118,7 +141,7 @@ io : entity work.memory
     port map( 
         clk => clk,
         reset => reset,
-        a1 => instr(6 downto 0),
+        a1 => instr10_ex(6 downto 0),
         d1 => readdata,
         wd => writedata,
         we => ram_write_en,

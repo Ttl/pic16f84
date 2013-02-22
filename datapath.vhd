@@ -5,7 +5,7 @@ use work.picpkg.all;
 
 entity datapath is
     Port ( clk,reset : in  STD_LOGIC;
-           instr : in  STD_LOGIC_VECTOR(13 downto 0);
+           instr10 : in  STD_LOGIC_VECTOR(10 downto 0);
            writedata : out std_logic_vector(7 downto 0);
            readdata : in std_logic_vector(7 downto 0);
            alu_op : in alu_ctrl;
@@ -45,7 +45,7 @@ w_reg : entity work.flopr
 -- ALU A mux             
 alua_mux : entity work.mux4
     generic map(WIDTH => 8)
-    port map(a => instr(7 downto 0),
+    port map(a => instr10(7 downto 0),
              b => readdata,
              c => "00000000",
              d => "00000001",
@@ -66,8 +66,8 @@ alu1 : entity work.alu
     Port map( a => amux_out,
            b => bmux_out,
            ctrl => alu_op,
-           bit_clr_set => instr(10),
-           bit_sel => instr(9 downto 7),
+           bit_clr_set => instr10(10),
+           bit_sel => instr10(9 downto 7),
            status_c => status_c_in,
            r => alu_result,
            z => alu_z,

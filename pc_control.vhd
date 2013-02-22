@@ -26,10 +26,11 @@ alias gie is intcon(7);
 alias t0ie is intcon(5);
 signal pc_plus1_int, pc_plus1_int2 : std_logic_vector(12 downto 0);
 signal pc_tmp : std_logic_vector(12 downto 0);
-signal skip_tmp : std_logic;
+signal skip_tmp, skip_tmp2 : std_logic;
 signal retrn_delayed : std_logic;
 signal skip : std_logic;
 signal pcreg_in : std_logic_vector(12 downto 0);
+
 begin
 
 pc_plus1_int2 <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
@@ -38,22 +39,21 @@ pc_plus1 <= pc_plus1_int;
 
 pcreg_in <= std_logic_vector(to_unsigned(4,13)) when (gie and tmr0_overflow and t0ie) = '1' else
           pc_ret when retrn = '1' else
-          pc_plus1_int when branch = '0' or skip = '1'
+          pc_plus1_int when branch = '0' or skip_tmp2 = '1'
           else pc_tmp(12 downto 11)&instr(10 downto 0);
 
 pc <= pc_tmp;
 
+skip_tmp2 <= skip_tmp and alu_z;
 -- Skip instruction on taken conditional branch, return or write to PCL
-skip <= skip_tmp or retrn_delayed or pcl_update;
+skip <= skip_tmp2 or retrn_delayed or pcl_update;
 skip_instr <= skip;
 
--- Interrupt logic
-interrupt <= (gie and tmr0_overflow and t0ie);
-
+-- Skip delay
 skip_delay : process(clk)
 begin
 if rising_edge(clk) then
-    skip_tmp <= skip_next and alu_z;
+    skip_tmp <= skip_next;
 end if;
 end process;
 
@@ -63,6 +63,9 @@ if rising_edge(clk) then
     retrn_delayed <= retrn;
 end if;
 end process;
+
+-- Interrupt logic
+interrupt <= (gie and tmr0_overflow and t0ie);
 
 pc_reg : entity work.flopr
     generic map( WIDTH => 13)
