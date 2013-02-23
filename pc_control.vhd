@@ -15,7 +15,6 @@ entity pc_control is
            alu_z : in STD_LOGIC;
            tmr0_overflow : in STD_LOGIC;
            pc_plus1 : out  STD_LOGIC_VECTOR (12 downto 0);
-           skip_instr : out STD_LOGIC;
            interrupt : out STD_LOGIC
            );
 end pc_control;
@@ -34,6 +33,7 @@ signal pcl_update : std_logic;
 
 begin
 
+-- Forward the information about PCL update
 pcl_update <= '1' when (instr = "00000010000010") or (instr = "00000010000000" and fsr_to_pcl = '1') else '0';
 
 pc_plus1_int2 <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
@@ -49,9 +49,6 @@ pcreg_in <= std_logic_vector(to_unsigned(4,13)) when (gie and tmr0_overflow and 
 pc <= pc_tmp;
 
 skip_tmp2 <= skip_tmp and alu_z;
--- Skip instruction on taken conditional branch
-skip <= skip_tmp2;
-skip_instr <= skip;
 
 -- Skip delay
 skip_delay : process(clk)

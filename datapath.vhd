@@ -12,7 +12,6 @@ entity datapath is
            write_en : out std_logic;
            bmux,rwmux,writew : in std_logic;
            amux : in std_logic_vector(1 downto 0);
-           skip_instr : in std_logic;
            status_flags : out std_logic_Vector(4 downto 0);
            status_c_in : in std_logic);
 end datapath;
@@ -26,10 +25,10 @@ signal alu_result : std_logic_vector(7 downto 0);
 
 begin
 
--- Don't write to RAM on skipped instruction       
-write_en <= rwmux when skip_instr = '0' else '0';
--- Don't write W when skipping an instruction
-wnext <= alu_result when writew = '1' and skip_instr = '0' else w;
+    
+write_en <= rwmux;
+
+wnext <= alu_result when writew = '1' else w;
 -- RAM data in, address comes from instr(6 downto 0)
 writedata <= alu_result;
 -- Status flags from ALU to IO

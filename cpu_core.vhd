@@ -42,13 +42,12 @@ signal interrupt, retfie : std_logic;
 
 signal intcon, option_reg : std_logic_vector(7 downto 0);
 
-signal skip_instr : std_logic;
-
 -- Execute state signals
 signal amux_ex : std_logic_vector(1 downto 0);
 signal bmux_ex, rwmux_ex, writew_ex, skip_ex : std_logic;
 signal alu_op_ex : alu_ctrl;
 signal instr10_ex : std_logic_vector(10 downto 0);
+signal status_write_ex : std_logic_vector(4 downto 0);
 begin
 
 pc_out <= pc;
@@ -66,7 +65,6 @@ datapath : entity work.datapath
         bmux => bmux_ex,
         rwmux => rwmux_ex,
         writew => writew_ex,
-        skip_instr => skip_instr,
         status_flags => status_flags,
         status_c_in => status_c
     );
@@ -80,12 +78,14 @@ ctrl_flop : entity work.ctrl_buf
         rwmux => rwmux,
         alu_op => alu_op,
         instr10 => instr(10 downto 0),
+        status_write => status_write,
         amux_ex => amux_ex,
         bmux_ex => bmux_ex,
         writew_ex => writew_ex,
         rwmux_ex => rwmux_ex,
         alu_op_ex => alu_op_ex,
-        instr10_ex => instr10_ex
+        instr10_ex => instr10_ex,
+        status_write_ex => status_write_ex
     );
 
 pc_ctrl : entity work.pc_control
@@ -104,7 +104,6 @@ pc_ctrl : entity work.pc_control
         alu_z => status_flags(2),
         tmr0_overflow => tmr0_overflow,
         pc_plus1 => stack_in,
-        skip_instr => skip_instr,
         interrupt => interrupt
     );
 
@@ -146,7 +145,7 @@ io : entity work.memory
         wd => writedata,
         we => ram_write_en,
         status_flags => status_flags,
-        status_write => status_write,
+        status_write => status_write_ex,
         status_c => status_c,
         pc_mem_out => pc_mem,
         pcl_in => pc(7 downto 0),
