@@ -33,7 +33,7 @@ ARCHITECTURE behavior OF cpu_core_tb IS
    signal pc_out : std_logic_vector(12 downto 0);
 
    -- Clock period definitions
-   constant clk_period : time := 10 ns;
+   constant clk_period : time := 31.25 ns;
  
 BEGIN
  
