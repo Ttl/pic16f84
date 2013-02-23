@@ -31,7 +31,7 @@ signal stack_push : std_logic;
 signal stack_in, stack_out : std_logic_vector(12 downto 0);
 
 signal pc_mem : std_logic_vector(12 downto 0);
-signal pc_update : std_logic;
+signal fsr_to_pcl : std_logic;
 
 -- Signal for pushing PC to stack from decoder
 signal call : std_logic;
@@ -71,7 +71,7 @@ datapath : entity work.datapath
         status_c_in => status_c
     );
 
-ctrkl_flop : entity work.ctrl_buf 
+ctrl_flop : entity work.ctrl_buf 
     port map(
         clk => clk,
         amux => amux,
@@ -99,7 +99,7 @@ pc_ctrl : entity work.pc_control
         intcon => intcon,
         branch => branch,
         skip_next => skip,
-        pcl_update => pc_update,
+        fsr_to_pcl => fsr_to_pcl,
         retrn => retrn,
         alu_z => status_flags(2),
         tmr0_overflow => tmr0_overflow,
@@ -152,7 +152,7 @@ io : entity work.memory
         pcl_in => pc(7 downto 0),
         porta_inout => porta,
         portb_inout => portb,
-        pc_update => pc_update,
+        fsr_to_pcl => fsr_to_pcl,
         intcon_out => intcon,
         option_reg_out => option_reg,
         interrupt => interrupt,

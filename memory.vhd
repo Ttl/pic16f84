@@ -18,7 +18,7 @@ entity memory is
            pcl_in : in std_logic_vector(7 downto 0);
            porta_inout : inout std_logic_vector(4 downto 0);
            portb_inout : inout std_logic_vector(7 downto 0);
-           pc_update : out std_logic;
+           fsr_to_pcl : out std_logic;
            intcon_out : out std_logic_vector(7 downto 0);
            option_reg_out : out std_logic_vector(7 downto 0);
            interrupt : in STD_LOGIC;
@@ -90,7 +90,6 @@ if rising_edge(clk) then
         intcon(7) <= '1';
     end if;
     
-    pc_update <= '0';
     if we = '1' then
         --Write
         case to_integer(unsigned(addr)) is
@@ -109,7 +108,6 @@ if rising_edge(clk) then
             -- PCL
             when 2 =>
                 pcl <= wd;
-                pc_update <= '1';
                  
             -- STATUS
             when 3 => 
@@ -291,8 +289,9 @@ portb_inout <= portb;
 -- Output C flag to ALU for RLF/RRF instructions
 status_c <= status(0);
 -- PCL is written to when updated
-pc_mem_out <= pclath(4 downto 0)&pcl;
+pc_mem_out <= pclath(4 downto 0)&wd;
 intcon_out <= intcon;
 option_reg_out <= option_reg;
+fsr_to_pcl <= '1' when fsr = "00000010" else '0';
 end Behavioral;
 
