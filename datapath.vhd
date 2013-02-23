@@ -48,7 +48,7 @@ alua_mux : entity work.mux4
     port map(a => instr10(7 downto 0),
              b => readdata,
              c => "00000000",
-             d => "00000001",
+             d => "--------",
              s => amux,
              y => amux_out
             );
