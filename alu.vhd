@@ -50,31 +50,15 @@ case ctrl is
 
     when A_PASSA => -- PASS A
         tmp := "0"&a;
-        if unsigned(tmp(7 downto 0)) = 0 then
-            z <= '1';
-        else
-            z <= '0';
-        end if;
- 
         
     when A_ADD => --ADD
         tmp := std_logic_vector(unsigned('0'&a)+unsigned('0'&b));
-        if unsigned(tmp(7 downto 0)) = 0 then
-            z <= '1';
-        else
-            z <= '0';
-        end if;
         c <= tmp(8);
         -- VERIFY CORRECTNESS
         dc <= (a(4) and b(4));     
     
     when A_SUBAB => -- SUB A-B
         tmp := std_logic_vector(unsigned('0'&a)-unsigned('0'&b));
-        if unsigned(tmp(7 downto 0)) = 0 then
-            z <= '1';
-        else
-            z <= '0';
-        end if;
         c <= tmp(8);
         -- VERIFY CORRECTNESS
         dc <= (a(4) and b(4));    
@@ -123,12 +107,21 @@ case ctrl is
         c <= a(0);
         
     when others => 
-        tmp := '0'&a;
-        z <= '0';
-        c <= '0';
-        dc <= '0';
+        tmp := "---------";
+        z <= '-';
+        c <= '-';
+        dc <= '-';
         
 end case;
+
+-- Z-flag
+if unsigned(tmp(7 downto 0)) = 0 then
+    z <= '1';
+else
+    z <= '0';
+end if;
+
+-- Set output
 r <= tmp(7 downto 0);
 end process;
 
