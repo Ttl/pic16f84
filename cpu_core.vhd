@@ -7,6 +7,7 @@ use work.picpkg.all;
 --use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_core is
+    Generic (instruction_file : string);
     Port ( clk, reset : in  STD_LOGIC;
            porta : inout std_logic_vector(4 downto 0);
            portb : inout std_logic_vector(7 downto 0);
@@ -126,7 +127,7 @@ decoder : entity work.decoder
 
 instr_memory : entity work.memory_instruction
     generic map(
-           CONTENTS => "scripts/instructions.mif"
+           CONTENTS => instruction_file
     )
     port map( 
         clk => clk,

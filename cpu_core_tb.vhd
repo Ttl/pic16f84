@@ -13,6 +13,7 @@ ARCHITECTURE behavior OF cpu_core_tb IS
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT cpu_core
+    GENERIC( instruction_file : string);
     PORT(
          clk : IN  std_logic;
          reset : IN  std_logic;
@@ -38,7 +39,9 @@ ARCHITECTURE behavior OF cpu_core_tb IS
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
-   uut: cpu_core PORT MAP (
+   uut: cpu_core 
+   Generic map(instruction_file => "scripts/instructions.mif")
+   PORT MAP (
           clk => clk,
           reset => reset,
           porta => porta,

@@ -55,6 +55,8 @@ alias INTCON is sfr(14);
 
 alias bank is sfr(3)(5);
 
+
+
 begin
 
 
@@ -62,6 +64,8 @@ begin
 -- Memory
 process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in)
 variable addr : std_logic_vector(6 downto 0);
+-- Previous PORTB values needed for INTCON(0) RBIF
+variable portb_prev : std_logic_vector(7 downto 4);
 begin
 
 -- Indirect addressing
@@ -79,6 +83,12 @@ if rising_edge(clk) then
             status(I) <= status_flags(I);
         end if;
     end loop;
+    
+    -- INTCON(0), RBIF bit. PORTB[4:7] has changed state, must be cleared in software
+    if portb_prev(7 downto 4) /= portb(7 downto 4) then
+        intcon(0) <= '1';
+    end if;
+    portb_prev := portb(7 downto 4);
     
     -- On interrupt INTCON(7) GIE is cleared
     if interrupt = '1' then
@@ -180,13 +190,11 @@ if rising_edge(clk) then
                 intcon <= wd;
                 
             when others =>
-                if to_integer(unsigned(addr)) > 11 then
                     if bank = '0' then
                         mem_b0(to_integer(unsigned(addr))) <= wd;
                     else
                         mem_b1(to_integer(unsigned(addr))) <= wd;
                     end if;
-                end if;
         end case;
     end if;
 end if;
@@ -278,7 +286,7 @@ if reset = '1' then
     pclath <= "00000000";
     porta <= "---ZZZZZ";
     portb <= "ZZZZZZZZ";
-    trisa <= "XXX11111";
+    trisa <= "---11111";
     trisb <= "11111111";
     status <="00011000";
 end if;
