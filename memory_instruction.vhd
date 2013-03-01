@@ -47,11 +47,11 @@ begin
 if rising_edge(clk) then
     if we = '1' then
         --Write
-        mem(to_integer(unsigned(a1))) <= wd;
+        mem(to_integer(unsigned(a1(INST_MEM_SIZE - 1 downto 0)))) <= wd;
     end if;
 end if;
     -- Set output
-    d1 <= mem(to_integer(unsigned(a1)));
+    d1 <= mem(to_integer(unsigned(a1(INST_MEM_SIZE - 1 downto 0))));
 
 
 end process;
