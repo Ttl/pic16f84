@@ -21,8 +21,9 @@ entity memory is
            fsr_to_pcl : out std_logic;
            intcon_out : out std_logic_vector(7 downto 0);
            option_reg_out : out std_logic_vector(7 downto 0);
-           interrupt : in STD_LOGIC;
-           retfie : in STD_LOGIC);
+           interrupt : in interrupt_type;
+           retfie : in STD_LOGIC;
+           portb_interrupt : out STD_LOGIC);
 end memory;
 
 architecture Behavioral of memory is
@@ -64,8 +65,6 @@ begin
 -- Memory
 process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in)
 variable addr : std_logic_vector(6 downto 0);
--- Previous PORTB values needed for INTCON(0) RBIF
-variable portb_prev : std_logic_vector(7 downto 4);
 begin
 
 -- Indirect addressing
@@ -84,17 +83,30 @@ if rising_edge(clk) then
         end if;
     end loop;
     
-    -- INTCON(0), RBIF bit. PORTB[4:7] has changed state, must be cleared in software
-    if portb_prev(7 downto 4) /= portb(7 downto 4) then
-        intcon(0) <= '1';
+    -- If PORTB interrupt is enabled
+    if intcon(3) = '1' then
+        -- INTCON(0), RBIF bit. PORTB[4:7] has changed state, must be cleared in software
+        -- and with TRISB to compare only input pins
+        if (portb_inout(7 downto 4) and trisb(7 downto 4)) /= (portb(7 downto 4) and trisb(7 downto 4)) then
+            portb_interrupt <= '1';
+        end if;
     end if;
-    portb_prev := portb(7 downto 4);
     
     -- On interrupt INTCON(7) GIE is cleared
-    if interrupt = '1' then
+    if interrupt /= I_NONE then
         intcon(7) <= '0';
     end if;
 
+    -- Set TMR0 overflow bit
+    if interrupt = I_TMR0 then
+        intcon(2) <= '1';
+    end if;
+    
+    -- Set RB interrupt bit
+    if interrupt = I_RB then
+        intcon(0) <= '1';
+    end if;
+    
     -- On return from interrupt (retfie) GIE is set
     if retfie = '1' then
         intcon(7) <= '1';

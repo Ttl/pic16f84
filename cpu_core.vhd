@@ -39,7 +39,9 @@ signal call : std_logic;
 -- Signal from TMR0 for pushing the PC to stack
 signal tmr0_overflow : std_logic;
 
-signal interrupt, retfie : std_logic;
+signal interrupt : interrupt_type;
+signal retfie : std_logic;
+signal portb_interrupt : std_logic;
 
 signal intcon, option_reg : std_logic_vector(7 downto 0);
 
@@ -105,7 +107,8 @@ pc_ctrl : entity work.pc_control
         alu_z => status_flags(2),
         tmr0_overflow => tmr0_overflow,
         pc_plus1 => stack_in,
-        interrupt => interrupt
+        interrupt_out => interrupt,
+        portb_interrupt => portb_interrupt
     );
 
 
@@ -156,10 +159,11 @@ io : entity work.memory
         intcon_out => intcon,
         option_reg_out => option_reg,
         interrupt => interrupt,
-        retfie => retfie
+        retfie => retfie,
+        portb_interrupt => portb_interrupt
     );
 
-stack_push <= interrupt or call;
+stack_push <= '1' when (interrupt /= I_NONE) or (call = '1') else '0';
 
 stack : entity work.stack
     port map( 
