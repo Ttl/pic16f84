@@ -1,18 +1,17 @@
-PIC16F84 compatible microprocessor.
+PIC16F84 compatible microprocessor with two-stage pipeline.
 
-This project is a microprocessor aiming to be compatible with Microchips 
+This project is a microprocessor core aiming to be compatible with Microchips 
 pic16f84 microprocessor.
 
-Things that work:
-- All of the instruction except for:
-  clrwdt (clear watchdog timer)
-  sleep (disable oscillator, go into sleep state)
-- Inputs and outputs. Configuring, reading and writing.
+Things that don't work yet:
+- Programming (in-circuit low voltage programming)
+- Eeprom
+- Sleep, watchdog
+- Portb interrupts
 
-What doesn't
-- Some of the special purpose registers (peripheral related register)
-- Programming (Run time low voltage programming)
-- Sleep, watchdog, interrupts
+Eeprom won't be implemented due to lack of eeprom in FPGAs.
+Sleep is also not very useful with FPGA when the clock cannot be shutdown,
+but I might implement it anyways for compatibility reasons.
 
 Bugs:
-- Call, return, goto take 1 clock cycle instead of 2
+- Call, return and goto take 1 clock cycle instead of 2
