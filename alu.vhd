@@ -115,10 +115,12 @@ case ctrl is
 end case;
 
 -- Z-flag
-if unsigned(tmp(7 downto 0)) = 0 then
-    z <= '1';
-else
-    z <= '0';
+if ctrl /= A_BITTST then 
+    if unsigned(tmp(7 downto 0)) = 0 then
+        z <= '1';
+    else
+        z <= '0';
+    end if;
 end if;
 
 -- Set output
