@@ -23,7 +23,8 @@ entity memory is
            option_reg_out : out std_logic_vector(7 downto 0);
            interrupt : in interrupt_type;
            retfie : in STD_LOGIC;
-           portb_interrupt : out STD_LOGIC);
+           portb_interrupt : out STD_LOGIC;
+           portb0_interrupt : out STD_LOGIC);
 end memory;
 
 architecture Behavioral of memory is
@@ -56,14 +57,15 @@ alias INTCON is sfr(14);
 
 alias bank is sfr(3)(5);
 
-
+signal portb0_delayed : std_logic;
+signal portb0_rising, portb0_falling : std_logic;
 
 begin
 
 
 
 -- Memory
-process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in)
+process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in, porta_inout, portb_inout)
 variable addr : std_logic_vector(6 downto 0);
 variable portb_prev : std_logic_vector(7 downto 4);
 begin
@@ -92,19 +94,34 @@ if rising_edge(clk) then
     end if;
     portb_prev := portb_inout(7 downto 4);
     
-    -- On interrupt INTCON(7) GIE is cleared
-    if interrupt /= I_NONE then
-        intcon(7) <= '0';
+    portb0_interrupt <= '0';
+    -- OPTION(6) is interrupt edge direction, 1 = rising edge
+    if option_reg(6) = '1' and portb0_rising = '1' then
+        portb0_interrupt <= '1';
+    end if;
+    
+    if option_reg(6) = '0' and portb0_falling = '1' then
+        portb0_interrupt <= '1';
     end if;
 
-    -- Set TMR0 overflow bit
+    -- Set RB interrupt bit (RBIF)
+    if interrupt = I_RB then
+        intcon(0) <= '1';
+    end if;
+    
+    -- Set PORTB(0)/INT interrupt bit (INTF)
+    if interrupt = I_INT then
+        intcon(1) <= '1';
+    end if;
+    
+    -- Set TMR0 overflow bit (T0IF)
     if interrupt = I_TMR0 then
         intcon(2) <= '1';
     end if;
     
-    -- Set RB interrupt bit
-    if interrupt = I_RB then
-        intcon(0) <= '1';
+    -- On interrupt INTCON(7) GIE is cleared
+    if interrupt /= I_NONE then
+        intcon(7) <= '0';
     end if;
     
     -- On return from interrupt (retfie) GIE is set
@@ -142,14 +159,13 @@ if rising_edge(clk) then
             -- PORTA/TRISA
             when 5 =>
                 if bank = '0' then
-                    porta(7 downto 5) <= "---";
                     -- PORTA
                     for I in 0 to 4 loop
                         -- If output
                         if trisa(I) = '0' then
-                            porta(I) <= wd(I);
+                            porta_inout(I) <= wd(I);
                         else
-                            porta(I) <= 'Z';
+                            porta_inout(I) <= 'Z';
                         end if;
                     end loop;
                 else
@@ -164,9 +180,9 @@ if rising_edge(clk) then
                     for I in 0 to 7 loop
                         -- If output
                         if trisb(I) = '0' then
-                            portb(I) <= wd(I);
+                            portb_inout(I) <= wd(I);
                         else
-                            portb(I) <= 'Z';
+                            portb_inout(I) <= 'Z';
                         end if;
                     end loop;
                 else
@@ -242,7 +258,7 @@ case to_integer(unsigned(addr)) is
     -- PORTA/TRISA    
     when 5 =>
         if bank = '0' then
-            d1 <= "000"&porta(4 downto 0);
+            d1 <= "000"&porta_inout;
         else
             d1 <= "000"&trisa(4 downto 0);
         end if;
@@ -250,7 +266,7 @@ case to_integer(unsigned(addr)) is
     -- PORTB/TRISB  
     when 6 =>
         if bank = '0' then
-            d1 <= portb;
+            d1 <= portb_inout;
         else
             d1 <= trisb;
         end if;
@@ -296,16 +312,24 @@ if reset = '1' then
     option_reg <= "11111111";
     intcon <= "0000000-";
     pclath <= "00000000";
-    porta <= "---ZZZZZ";
-    portb <= "ZZZZZZZZ";
+    porta_inout <= "ZZZZZ";
+    portb_inout <= "ZZZZZZZZ";
     trisa <= "---11111";
     trisb <= "11111111";
     status <="00011000";
 end if;
 end process;
 
-porta_inout <= porta(4 downto 0);
-portb_inout <= portb;
+portb0_delay: process(clk, portb)
+begin
+if rising_edge(clk) then
+    portb0_delayed <= portb_inout(0);
+end if;
+end process;
+
+portb0_rising <= not portb0_delayed and portb_inout(0);
+portb0_falling <= portb0_delayed and not portb_inout(0);
+    
 -- Output C flag to ALU for RLF/RRF instructions
 status_c <= status(0);
 -- PCL is written to when updated

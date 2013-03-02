@@ -7,7 +7,7 @@ use work.picpkg.all;
 --use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_core is
-    Generic (instruction_file : string);
+    Generic (instruction_file : string := "scripts/instructions.mif");
     Port ( clk, reset : in  STD_LOGIC;
            porta : inout std_logic_vector(4 downto 0);
            portb : inout std_logic_vector(7 downto 0);
@@ -41,7 +41,7 @@ signal tmr0_overflow : std_logic;
 
 signal interrupt : interrupt_type;
 signal retfie : std_logic;
-signal portb_interrupt : std_logic;
+signal portb_interrupt, portb0_interrupt : std_logic;
 
 signal intcon, option_reg : std_logic_vector(7 downto 0);
 
@@ -108,7 +108,8 @@ pc_ctrl : entity work.pc_control
         tmr0_overflow => tmr0_overflow,
         pc_plus1 => stack_in,
         interrupt_out => interrupt,
-        portb_interrupt => portb_interrupt
+        portb_interrupt => portb_interrupt,
+        portb0_interrupt => portb0_interrupt
     );
 
 
@@ -160,7 +161,8 @@ io : entity work.memory
         option_reg_out => option_reg,
         interrupt => interrupt,
         retfie => retfie,
-        portb_interrupt => portb_interrupt
+        portb_interrupt => portb_interrupt,
+        portb0_interrupt => portb0_interrupt
     );
 
 stack_push <= '1' when (interrupt /= I_NONE) or (call = '1') else '0';

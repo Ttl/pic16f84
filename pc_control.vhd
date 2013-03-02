@@ -17,15 +17,15 @@ entity pc_control is
            tmr0_overflow : in STD_LOGIC;
            pc_plus1 : out  STD_LOGIC_VECTOR (12 downto 0);
            interrupt_out : out interrupt_type;
-           portb_interrupt : in STD_LOGIC
+           portb_interrupt : in STD_LOGIC;
+           portb0_interrupt : in STD_LOGIC
            );
 end pc_control;
 
 architecture Behavioral of pc_control is
 
-alias gie is intcon(7);
-alias t0ie is intcon(5);
-alias rbie is intcon(3);
+
+
 signal pc_plus1_int, pc_plus1_int2 : std_logic_vector(12 downto 0);
 signal pc_tmp : std_logic_vector(12 downto 0);
 signal skip_tmp : std_logic;
@@ -38,7 +38,7 @@ signal interrupt : interrupt_type;
 
 begin
 
--- Forward the information about PCL update (movwf PCL or movwf 0 and FSR = 0x10)
+-- Forward the information about PCL update (movwf PCL or movwf INDF and FSR = 0x10)
 pcl_update <= '1' when (instr = "00000010000010") or (instr = "00000010000000" and fsr_to_pcl = '1') else '0';
 
 pc_plus1_int2 <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
@@ -64,17 +64,26 @@ end if;
 end process;
 
 -- Interrupt logic
-process(gie, tmr0_overflow, portb_interrupt)
+process(tmr0_overflow, portb_interrupt, intcon, portb0_interrupt, skip)
 variable interrupt_hold : interrupt_type := I_NONE;
+alias gie is intcon(7);
+alias t0ie is intcon(5);
+alias rbie is intcon(3);
+alias inte is intcon(4);
 begin
 interrupt <= I_NONE;
-if gie = '1' then
+if gie = '1' and interrupt_hold = I_NONE then
+    -- TMR0
     if (tmr0_overflow and t0ie) = '1' then
         interrupt_hold := I_TMR0;
     end if;
-    -- Enable is checked at IO
+    -- PORTB(7 downto 4) changed interrupt
     if (portb_interrupt and rbie) = '1' then
         interrupt_hold := I_RB;
+    end if;
+    -- PORTB(0)/INR interrupt
+    if (portb0_interrupt and inte) = '1' then
+        interrupt_hold := I_INT;
     end if;
 end if;
 -- If we are skipping instruction we need to finish executing it
