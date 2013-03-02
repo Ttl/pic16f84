@@ -65,6 +65,7 @@ begin
 -- Memory
 process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in)
 variable addr : std_logic_vector(6 downto 0);
+variable portb_prev : std_logic_vector(7 downto 4);
 begin
 
 -- Indirect addressing
@@ -83,14 +84,16 @@ if rising_edge(clk) then
         end if;
     end loop;
     
+    portb_interrupt <= '0';
     -- If PORTB interrupt is enabled
     if intcon(3) = '1' then
         -- INTCON(0), RBIF bit. PORTB[4:7] has changed state, must be cleared in software
         -- and with TRISB to compare only input pins
-        if (portb_inout(7 downto 4) and trisb(7 downto 4)) /= (portb(7 downto 4) and trisb(7 downto 4)) then
+        if (portb_prev(7 downto 4) and trisb(7 downto 4)) /= (portb_inout(7 downto 4) and trisb(7 downto 4)) then
             portb_interrupt <= '1';
         end if;
     end if;
+    portb_prev := portb_inout(7 downto 4);
     
     -- On interrupt INTCON(7) GIE is cleared
     if interrupt /= I_NONE then
