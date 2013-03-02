@@ -25,6 +25,7 @@ architecture Behavioral of pc_control is
 
 alias gie is intcon(7);
 alias t0ie is intcon(5);
+alias rbie is intcon(3);
 signal pc_plus1_int, pc_plus1_int2 : std_logic_vector(12 downto 0);
 signal pc_tmp : std_logic_vector(12 downto 0);
 signal skip_tmp : std_logic;
@@ -37,7 +38,7 @@ signal interrupt : interrupt_type;
 
 begin
 
--- Forward the information about PCL update
+-- Forward the information about PCL update (movwf PCL or movwf 0 and FSR = 0x10)
 pcl_update <= '1' when (instr = "00000010000010") or (instr = "00000010000000" and fsr_to_pcl = '1') else '0';
 
 pc_plus1_int2 <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
@@ -64,16 +65,24 @@ end process;
 
 -- Interrupt logic
 process(gie, tmr0_overflow, portb_interrupt)
+variable interrupt_hold : interrupt_type := I_NONE;
 begin
 interrupt <= I_NONE;
 if gie = '1' then
     if (tmr0_overflow and t0ie) = '1' then
-        interrupt <= I_TMR0;
+        interrupt_hold := I_TMR0;
     end if;
     -- Enable is checked at IO
-    if portb_interrupt = '1' then
-        interrupt <= I_RB;
+    if (portb_interrupt and rbie) = '1' then
+        interrupt_hold := I_RB;
     end if;
+end if;
+-- If we are skipping instruction we need to finish executing it
+-- before interrupting, because skip signal is not saved
+-- and otherwise the skipped instruction would be executed on return
+if skip = '0' then
+    interrupt <= interrupt_hold;
+    interrupt_hold := I_NONE;
 end if;
 end process;
 interrupt_out <= interrupt;

@@ -85,13 +85,10 @@ if rising_edge(clk) then
     end loop;
     
     portb_interrupt <= '0';
-    -- If PORTB interrupt is enabled
-    if intcon(3) = '1' then
-        -- INTCON(0), RBIF bit. PORTB[4:7] has changed state, must be cleared in software
-        -- and with TRISB to compare only input pins
-        if (portb_prev(7 downto 4) and trisb(7 downto 4)) /= (portb_inout(7 downto 4) and trisb(7 downto 4)) then
-            portb_interrupt <= '1';
-        end if;
+    -- INTCON(0), RBIF bit. PORTB[4:7] has changed state, must be cleared in software
+    -- and with TRISB to compare only input pins
+    if (portb_prev(7 downto 4) and trisb(7 downto 4)) /= (portb_inout(7 downto 4) and trisb(7 downto 4)) then
+        portb_interrupt <= '1';
     end if;
     portb_prev := portb_inout(7 downto 4);
     
