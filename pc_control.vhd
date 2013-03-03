@@ -64,34 +64,36 @@ end if;
 end process;
 
 -- Interrupt logic
-process(tmr0_overflow, portb_interrupt, intcon, portb0_interrupt, skip)
+process(clk, tmr0_overflow, portb_interrupt, intcon, portb0_interrupt, skip)
 variable interrupt_hold : interrupt_type := I_NONE;
 alias gie is intcon(7);
 alias t0ie is intcon(5);
 alias rbie is intcon(3);
 alias inte is intcon(4);
 begin
-interrupt <= I_NONE;
-if gie = '1' and interrupt_hold = I_NONE then
-    -- TMR0
-    if (tmr0_overflow and t0ie) = '1' then
-        interrupt_hold := I_TMR0;
+if rising_edge(clk) then
+    interrupt <= I_NONE;
+    if gie = '1' and interrupt_hold = I_NONE then
+        -- TMR0
+        if (tmr0_overflow and t0ie) = '1' then
+            interrupt_hold := I_TMR0;
+        end if;
+        -- PORTB(7 downto 4) changed interrupt
+        if (portb_interrupt and rbie) = '1' then
+            interrupt_hold := I_RB;
+        end if;
+        -- PORTB(0)/INR interrupt
+        if (portb0_interrupt and inte) = '1' then
+            interrupt_hold := I_INT;
+        end if;
     end if;
-    -- PORTB(7 downto 4) changed interrupt
-    if (portb_interrupt and rbie) = '1' then
-        interrupt_hold := I_RB;
+    -- If we are skipping instruction we need to finish executing it
+    -- before interrupting, because skip signal is not saved
+    -- and otherwise the skipped instruction would be executed on return
+    if skip = '0' then
+        interrupt <= interrupt_hold;
+        interrupt_hold := I_NONE;
     end if;
-    -- PORTB(0)/INR interrupt
-    if (portb0_interrupt and inte) = '1' then
-        interrupt_hold := I_INT;
-    end if;
-end if;
--- If we are skipping instruction we need to finish executing it
--- before interrupting, because skip signal is not saved
--- and otherwise the skipped instruction would be executed on return
-if skip = '0' then
-    interrupt <= interrupt_hold;
-    interrupt_hold := I_NONE;
 end if;
 end process;
 interrupt_out <= interrupt;
