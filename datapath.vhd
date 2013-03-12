@@ -13,7 +13,8 @@ entity datapath is
            bmux,rwmux,writew : in std_logic;
            amux : in std_logic_vector(1 downto 0);
            status_flags : out std_logic_Vector(4 downto 0);
-           status_c_in : in std_logic);
+           status_c_in : in std_logic;
+           skip_ex : in std_logic);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -26,9 +27,9 @@ signal alu_result : std_logic_vector(7 downto 0);
 begin
 
     
-write_en <= rwmux;
+write_en <= rwmux and not skip_ex;
 
-wnext <= alu_result when writew = '1' else w;
+wnext <= alu_result when writew = '1' and skip_ex = '0' else w;
 -- RAM data in, address comes from instr(6 downto 0)
 writedata <= alu_result;
 -- Status flags from ALU to IO

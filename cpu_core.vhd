@@ -47,7 +47,7 @@ signal intcon, option_reg : std_logic_vector(7 downto 0);
 
 -- Execute state signals
 signal amux_ex : std_logic_vector(1 downto 0);
-signal bmux_ex, rwmux_ex, writew_ex, skip_ex : std_logic;
+signal bmux_ex, rwmux_ex, writew_ex, skip_ex, skip_dp : std_logic;
 signal alu_op_ex : alu_ctrl;
 signal instr10_ex : std_logic_vector(10 downto 0);
 signal status_write_ex : std_logic_vector(4 downto 0);
@@ -69,7 +69,8 @@ datapath : entity work.datapath
         rwmux => rwmux_ex,
         writew => writew_ex,
         status_flags => status_flags,
-        status_c_in => status_c
+        status_c_in => status_c,
+        skip_ex => skip_ex
     );
 
 ctrl_flop : entity work.ctrl_buf 
@@ -82,13 +83,15 @@ ctrl_flop : entity work.ctrl_buf
         alu_op => alu_op,
         instr10 => instr(10 downto 0),
         status_write => status_write,
+        skip_dp => skip_dp,
         amux_ex => amux_ex,
         bmux_ex => bmux_ex,
         writew_ex => writew_ex,
         rwmux_ex => rwmux_ex,
         alu_op_ex => alu_op_ex,
         instr10_ex => instr10_ex,
-        status_write_ex => status_write_ex
+        status_write_ex => status_write_ex,
+        skip_ex => skip_ex
     );
 
 pc_ctrl : entity work.pc_control
@@ -109,7 +112,8 @@ pc_ctrl : entity work.pc_control
         pc_plus1 => stack_in,
         interrupt_out => interrupt,
         portb_interrupt => portb_interrupt,
-        portb0_interrupt => portb0_interrupt
+        portb0_interrupt => portb0_interrupt,
+        skip_dp => skip_dp
     );
 
 

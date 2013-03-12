@@ -18,7 +18,8 @@ entity pc_control is
            pc_plus1 : out  STD_LOGIC_VECTOR (12 downto 0);
            interrupt_out : out interrupt_type;
            portb_interrupt : in STD_LOGIC;
-           portb0_interrupt : in STD_LOGIC
+           portb0_interrupt : in STD_LOGIC;
+           skip_dp : out STD_LOGIC
            );
 end pc_control;
 
@@ -32,7 +33,7 @@ signal skip_tmp : std_logic;
 signal skip : std_logic;
 signal pcreg_in : std_logic_vector(12 downto 0);
 
-signal pcl_update : std_logic;
+signal pcl_update, pcl_update_delay : std_logic;
 
 signal interrupt : interrupt_type;
 
@@ -53,12 +54,14 @@ pcreg_in <= std_logic_vector(to_unsigned(4,13)) when interrupt /= I_NONE else
 
 pc <= pc_tmp;
 
-skip <= skip_tmp and alu_z;
+skip <= (skip_tmp and alu_z) or pcl_update_delay;
+skip_dp <= skip;
 
 -- Skip delay
 skip_delay : process(clk)
 begin
 if rising_edge(clk) then
+    pcl_update_delay <= pcl_update;
     skip_tmp <= skip_next;
 end if;
 end process;

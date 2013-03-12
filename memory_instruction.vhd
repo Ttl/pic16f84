@@ -24,15 +24,18 @@ impure function init_mem(mif_file_name : in string) return mem_type14 is
     variable temp_mem : mem_type14;
     variable i : integer := 0;
 begin
-        while not endfile(mif_file) loop
+    for j in 0 to mem_type14'length-1 loop
+        if not endfile(mif_file) then
             readline(mif_file, mif_line);
+            -- Xilinx ISE implementation fix, uncomment to enable implementation and lose the last instruction
+            --if not endfile(mif_file) then
             read(mif_line, temp_bv);
-            temp_mem(i) := to_stdlogicvector(temp_bv);
-            i := i + 1;
-        end loop;
-        for j in i to mem_type14'length-1 loop
+            --end if;
+            temp_mem(j) := to_stdlogicvector(temp_bv);
+        else
             temp_mem(j) := (others => '0');
-        end loop;
+        end if;
+    end loop;
     return temp_mem;
 end function;
 
@@ -49,10 +52,10 @@ if rising_edge(clk) then
         --Write
         mem(to_integer(unsigned(a1(INST_MEM_SIZE - 1 downto 0)))) <= wd;
     end if;
-end if;
+
     -- Set output
     d1 <= mem(to_integer(unsigned(a1(INST_MEM_SIZE - 1 downto 0))));
-
+end if;
 
 end process;
 
