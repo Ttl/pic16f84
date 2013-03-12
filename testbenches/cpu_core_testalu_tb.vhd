@@ -67,17 +67,17 @@ BEGIN
       wait until rising_edge(clk);
       reset <= '0';
       wait for clk_period/2;
-      wait until pc_out = std_logic_vector(to_unsigned(13,13));
+      wait until pc_out = std_logic_vector(to_unsigned(14,13));
       assert portb = std_logic_vector(to_unsigned(2,8)) report "Line 11, incf result wrong" severity failure;
-      wait until pc_out = std_logic_vector(to_unsigned(16,13));
+      wait until pc_out = std_logic_vector(to_unsigned(17,13));
       assert portb = std_logic_vector(to_unsigned(0,8)) report "Line 14, subwf result wrong" severity failure;
-      wait until pc_out = std_logic_vector(to_unsigned(19,13));
+      wait until pc_out = std_logic_vector(to_unsigned(20,13));
       assert portb = "00011111" report "Line 17, STATUS wrong" severity failure;
       
-      wait until pc_out = std_logic_vector(to_unsigned(23,13));
+      wait until pc_out = std_logic_vector(to_unsigned(24,13));
       assert portb = std_logic_vector(to_unsigned(16,8)) report "Line 21, ADDWF wrong" severity failure;
       
-      wait until pc_out = std_logic_vector(to_unsigned(26,13));
+      wait until pc_out = std_logic_vector(to_unsigned(27,13));
       assert portb = "00011010" report "Line 21, STATUS wrong" severity failure;
       
       wait for clk_period;
