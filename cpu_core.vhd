@@ -29,7 +29,7 @@ signal status_write, status_flags : std_logic_vector(4 downto 0);
 
 -- Stack signals
 signal stack_push : std_logic;
-signal stack_in, stack_out : std_logic_vector(12 downto 0);
+signal stack_out : std_logic_vector(12 downto 0);
 
 signal pc_mem : std_logic_vector(12 downto 0);
 signal fsr_to_pcl : std_logic;
@@ -109,7 +109,6 @@ pc_ctrl : entity work.pc_control
         retrn => retrn,
         alu_z => status_flags(2),
         tmr0_overflow => tmr0_overflow,
-        pc_plus1 => stack_in,
         interrupt_out => interrupt,
         portb_interrupt => portb_interrupt,
         portb0_interrupt => portb0_interrupt,
@@ -177,7 +176,7 @@ stack : entity work.stack
         reset => reset,
         push => stack_push,
         pop => retrn,
-        pcin => stack_in,
+        pcin => pc,
         pcout => stack_out
     );
 

@@ -15,7 +15,6 @@ entity pc_control is
            retrn : in STD_LOGIC;
            alu_z : in STD_LOGIC;
            tmr0_overflow : in STD_LOGIC;
-           pc_plus1 : out  STD_LOGIC_VECTOR (12 downto 0);
            interrupt_out : out interrupt_type;
            portb_interrupt : in STD_LOGIC;
            portb0_interrupt : in STD_LOGIC;
@@ -27,13 +26,14 @@ architecture Behavioral of pc_control is
 
 
 
-signal pc_plus1_int, pc_plus1_int2 : std_logic_vector(12 downto 0);
+signal pc_plus1_int : std_logic_vector(12 downto 0);
 signal pc_tmp : std_logic_vector(12 downto 0);
 signal skip_tmp : std_logic;
 signal skip : std_logic;
 signal pcreg_in : std_logic_vector(12 downto 0);
 
 signal pcl_update, pcl_update_delay : std_logic;
+signal branch_delay, retrn_delay : std_logic;
 
 signal interrupt : interrupt_type;
 
@@ -42,9 +42,7 @@ begin
 -- Forward the information about PCL update (movwf PCL or movwf INDF and FSR = 0x10)
 pcl_update <= '1' when (instr = "00000010000010") or (instr = "00000010000000" and fsr_to_pcl = '1') else '0';
 
-pc_plus1_int2 <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
-pc_plus1_int <= pc_plus1_int2 when pcl_update = '0' else pc_mem;
-pc_plus1 <= pc_plus1_int;
+pc_plus1_int <= std_logic_vector(unsigned(pc_tmp) + to_unsigned(1,13));
 
 pcreg_in <= std_logic_vector(to_unsigned(4,13)) when interrupt /= I_NONE else
           pc_ret when retrn = '1' else
@@ -54,7 +52,7 @@ pcreg_in <= std_logic_vector(to_unsigned(4,13)) when interrupt /= I_NONE else
 
 pc <= pc_tmp;
 
-skip <= (skip_tmp and alu_z) or pcl_update_delay;
+skip <= (skip_tmp and alu_z) or pcl_update_delay or branch_delay or retrn_delay;
 skip_dp <= skip;
 
 -- Skip delay
@@ -63,6 +61,8 @@ begin
 if rising_edge(clk) then
     pcl_update_delay <= pcl_update;
     skip_tmp <= skip_next;
+    branch_delay <= branch;
+    retrn_delay <= retrn;
 end if;
 end process;
 
