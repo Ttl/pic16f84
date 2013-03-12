@@ -1,4 +1,5 @@
-PIC16F84 compatible microprocessor with two-stage pipeline.
+PIC16F84 compatible microprocessor with three-stage pipeline.
+The pipeline stages are: instruction fetch, decode and execute.
 
 This project is a microprocessor core aiming to be compatible with Microchips 
 pic16f84 microprocessor.
@@ -11,6 +12,3 @@ Things that don't work yet:
 Eeprom won't be implemented due to lack of eeprom in FPGAs.
 Sleep is also not very useful with FPGA because the clock cannot be shutdown,
 but I might implement it anyways for compatibility reasons.
-
-Bugs:
-- Call, return and goto take 1 clock cycle instead of 2
