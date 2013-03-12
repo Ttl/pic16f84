@@ -26,11 +26,14 @@ signal alu_result : std_logic_vector(7 downto 0);
 
 begin
 
-    
-write_en <= rwmux and not skip_ex;
+-- If skip_ex is '1' skipped instruction is computed, but not stored
 
+-- Write ALU result to RAM
+write_en <= rwmux and not skip_ex;
+-- Source of next W value
 wnext <= alu_result when writew = '1' and skip_ex = '0' else w;
--- RAM data in, address comes from instr(6 downto 0)
+
+-- RAM input data is always ALU result
 writedata <= alu_result;
 -- Status flags from ALU to IO
 status_flags <= "00"&alu_z&alu_dc&alu_c;
