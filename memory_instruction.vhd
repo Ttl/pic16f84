@@ -30,8 +30,8 @@ begin
             -- Xilinx ISE implementation fix, uncomment to enable implementation and lose the last instruction
             --if not endfile(mif_file) then
             read(mif_line, temp_bv);
-            --end if;
             temp_mem(j) := to_stdlogicvector(temp_bv);
+            --end if;
         else
             temp_mem(j) := (others => '0');
         end if;
