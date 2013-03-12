@@ -65,7 +65,7 @@ begin
 
 
 -- Memory
-process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in, porta_inout, portb_inout)
+process(clk, reset, we, a1, mem_b0, mem_b1, sfr, bank, pcl_in, porta_inout, portb_inout, trisa, trisb)
 variable addr : std_logic_vector(6 downto 0);
 variable portb_prev : std_logic_vector(7 downto 4);
 begin
