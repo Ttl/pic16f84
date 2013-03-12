@@ -77,7 +77,10 @@ BEGIN
       portb <= "LLHLLLLL";
       wait for clk_period*10;
       assert unsigned(pc_out) > 24 severity failure;
-      wait;
+      
+      reset <= '1';
+      wait for clk_period;
+      assert false report "Succesfully completed" severity failure;
    end process;
 
 END;

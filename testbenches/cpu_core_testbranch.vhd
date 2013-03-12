@@ -74,7 +74,14 @@ BEGIN
       assert unsigned(pc_out) > to_unsigned(21,13) report "PCL update failed" severity failure;
       wait for clk_period*5;
       assert portb = "11111111" report "Instruction not skipped" severity failure;
-      wait;
+      wait for clk_period*8;
+      assert portb = "00000011" report "Instruction not skipped (Call/return)" severity failure;
+      wait for clk_period*4;
+      assert portb = "00000011" report "Instruction not skipped (goto)" severity failure;
+      
+      reset <= '1';
+      wait for clk_period;
+      assert false report "Succesfully completed" severity failure;
    end process;
 
 END;
