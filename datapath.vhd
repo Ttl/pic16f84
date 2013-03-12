@@ -42,26 +42,16 @@ w_reg : entity work.flopr
              d => wnext,
              q => w
              );
--- ALU A mux             
-alua_mux : entity work.mux4
-    generic map(WIDTH => 8)
-    port map(a => instr10(7 downto 0),
-             b => readdata,
-             c => "00000000",
-             d => "--------",
-             s => amux,
-             y => amux_out
-            );
+
+-- ALU A mux 
+amux_out <= instr10(7 downto 0) when amux = "00" else
+            readdata when amux = "01" else
+            "00000000" when amux = "10" else
+            "--------";
 
 -- ALU B mux             
-alub_mux : entity work.mux2
-    generic map(WIDTH => 8)
-    port map(a => w,
-             b => "00000001",
-             c => bmux,
-             y => bmux_out
-            );
-            
+bmux_out <= w when bmux = '0' else "00000001";
+
 alu1 : entity work.alu
     Port map( a => amux_out,
            b => bmux_out,
