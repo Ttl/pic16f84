@@ -14,10 +14,12 @@ begin
 
 process(clk, reset)
 begin
-if reset = '1' then
-    q <= (others => '0');
-elsif rising_edge(clk) then
-    q <= d;
+if rising_edge(clk) then
+    if reset = '1' then
+        q <= (others => '0');
+    else
+        q <= d;
+    end if;
 end if;
 end process;
 
