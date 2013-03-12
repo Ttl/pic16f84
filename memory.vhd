@@ -29,7 +29,7 @@ end memory;
 
 architecture Behavioral of memory is
 
-type fsr_type is array(0 to 12) of std_logic_vector(7 downto 0);
+type fsr_type is array(0 to 14) of std_logic_vector(7 downto 0);
 
 -- Two different banks
 -- Access is decided by status(5) bit
@@ -44,16 +44,16 @@ alias OPTION_REG is sfr(1);
 alias PCL is sfr(2);
 alias STATUS is sfr(3);
 alias FSR is sfr(4);
--- PORTA
-alias TRISA is sfr(5);
--- PORTB
-alias TRISB is sfr(6);
-alias EEDATA is sfr(7);
-alias EECON1 is sfr(8);
-alias EEADR is sfr(9);
-alias EECON2 is sfr(10);
-alias PCLATH is sfr(11);
-alias INTCON is sfr(12);
+alias PORTA is sfr(5);
+alias TRISA is sfr(6);
+alias PORTB is sfr(7);
+alias TRISB is sfr(8);
+alias EEDATA is sfr(9);
+alias EECON1 is sfr(10);
+alias EEADR is sfr(11);
+alias EECON2 is sfr(12);
+alias PCLATH is sfr(13);
+alias INTCON is sfr(14);
 
 alias bank is sfr(3)(5);
 
@@ -160,14 +160,7 @@ if rising_edge(clk) then
             when 5 =>
                 if bank = '0' then
                     -- PORTA
-                    for I in 0 to 4 loop
-                        -- If output
-                        if trisa(I) = '0' then
-                            porta_inout(I) <= wd(I);
-                        else
-                            porta_inout(I) <= 'Z';
-                        end if;
-                    end loop;
+                    porta <= wd;
                 else
                     -- TRISA
                     trisa <= "111"&wd(4 downto 0);
@@ -177,14 +170,7 @@ if rising_edge(clk) then
             when 6 =>    
                 if bank = '0' then
                     -- PORTB
-                    for I in 0 to 7 loop
-                        -- If output
-                        if trisb(I) = '0' then
-                            portb_inout(I) <= wd(I);
-                        else
-                            portb_inout(I) <= 'Z';
-                        end if;
-                    end loop;
+                    portb <= wd;
                 else
                     -- TRISB
                     trisb <= wd;
@@ -308,6 +294,25 @@ case to_integer(unsigned(addr)) is
         end if;
 end case;
 
+-- Set outputs if needed
+for I in 0 to 4 loop
+    -- If output
+    if trisa(I) = '0' then
+        porta_inout(I) <= porta(I);
+    else
+        porta_inout(I) <= 'Z';
+    end if;
+end loop;
+
+for I in 0 to 7 loop
+    -- If output
+    if trisb(I) = '0' then
+        portb_inout(I) <= portb(I);
+    else
+        portb_inout(I) <= 'Z';
+    end if;
+end loop;
+
 if reset = '1' then
     option_reg <= "11111111";
     intcon <= "0000000-";
@@ -320,6 +325,8 @@ if reset = '1' then
 end if;
 end process;
 
+
+                    
 portb0_delay: process(clk, portb_inout)
 begin
 if rising_edge(clk) then
