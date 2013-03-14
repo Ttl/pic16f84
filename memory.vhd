@@ -29,7 +29,7 @@ end memory;
 
 architecture Behavioral of memory is
 
-type fsr_type is array(0 to 14) of std_logic_vector(7 downto 0);
+type fsr_type is array(0 to 13) of std_logic_vector(7 downto 0);
 
 -- Two different banks
 -- Access is decided by status(5) bit
@@ -41,21 +41,21 @@ signal sfr : fsr_type;
 -- SFR fields
 alias TMR0 is sfr(0);
 alias OPTION_REG is sfr(1);
-alias PCL is sfr(2);
-alias STATUS is sfr(3);
-alias FSR is sfr(4);
-alias PORTA is sfr(5);
-alias TRISA is sfr(6);
-alias PORTB is sfr(7);
-alias TRISB is sfr(8);
-alias EEDATA is sfr(9);
-alias EECON1 is sfr(10);
-alias EEADR is sfr(11);
-alias EECON2 is sfr(12);
-alias PCLATH is sfr(13);
-alias INTCON is sfr(14);
+-- PCL
+alias STATUS is sfr(2);
+alias FSR is sfr(3);
+alias PORTA is sfr(4);
+alias TRISA is sfr(5);
+alias PORTB is sfr(6);
+alias TRISB is sfr(7);
+alias EEDATA is sfr(8);
+alias EECON1 is sfr(9);
+alias EEADR is sfr(10);
+alias EECON2 is sfr(11);
+alias PCLATH is sfr(12);
+alias INTCON is sfr(13);
 
-alias bank is sfr(3)(5);
+alias bank is sfr(2)(5);
 
 signal portb0_delayed : std_logic;
 signal portb0_rising, portb0_falling : std_logic;
@@ -146,7 +146,7 @@ if rising_edge(clk) then
                 
             -- PCL
             when 2 =>
-                pcl <= wd;
+                --Handled by pc_control
                  
             -- STATUS
             when 3 => 
