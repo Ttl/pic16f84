@@ -1,14 +1,17 @@
-PIC16F84 compatible microprocessor with three-stage pipeline.
-The pipeline stages are: instruction fetch, decode and execute.
+PIC16F84 compatible microprocessor
 
 This project is a microprocessor core aiming to be compatible with Microchips 
-pic16f84 microprocessor.
+pic16f84 microprocessor. I don't promise that this project is bug free,
+so don't use it in anything important.
 
 Things that don't work yet:
 - Programming (in-circuit low voltage programming)
 - Eeprom
 - Sleep, watchdog
 
+High voltage programming won't obviously ever work.
 Eeprom won't be implemented due to lack of eeprom in FPGAs.
 Sleep is also not very useful with FPGA because the clock cannot be shutdown,
 but I might implement it anyways for compatibility reasons.
+
+Licensed under LGPL.
