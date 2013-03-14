@@ -12,11 +12,11 @@ end stack;
 
 architecture Behavioral of stack is
 
-signal mem : stack_type13;
+signal stack : stack_type13;
 
 begin
 
-process(clk, reset, mem, push, pop, pcin)
+process(clk, reset, stack, push, pop, pcin)
 variable pointer : unsigned(2 downto 0);
 begin
 
@@ -24,13 +24,13 @@ if rising_edge(clk) then
     if push = '1' then
         --Write
         pointer := pointer + 1;
-        mem(to_integer(pointer)) <= pcin;
+        stack(to_integer(pointer)) <= pcin;
     elsif pop = '1' then
         pointer := pointer - 1;
     end if;
 end if;
     -- Set output, only readable after pop
-    pcout <= mem(to_integer(pointer));
+    pcout <= stack(to_integer(pointer));
 
 if reset = '1' then
     pointer := to_unsigned(0,3);
